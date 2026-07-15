@@ -77,6 +77,7 @@
 | D28 | CI/CD | ללא Pipeline; דיפלוי אוטומטי/ידני דרך Render על push ל-Git | מחוץ להיקף 90 הדקות | Developer Decision |
 | D29 | בדיקות (Testing) | בדיקת עשן אחת ל-`POST /ask`, כצעד אחרון בתוכנית העבודה | אופציונלי לפי המסמך, אך נכלל לפי בקשת המפתח/ת | Developer Decision |
 | D30 | סודות | כל המפתחות (`OPENAI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`) ב-Environment Variables, לא בקוד/Git | דרישה מפורשת | Requirement Document |
+| D31 | שיטת פריסה ב-Render | Docker Runtime עם `Dockerfile` (לא Native Python Runtime) | שליטה מלאה וריפרודוקביליות של סביבת ההרצה; הוחלט בשלב הדיפלוי לאחר שהוחמץ בסבב השאלות המקורי ותוקן | Developer Decision (retroactive — נשאלה ואושרה בשלב הביצוע, M0.6) |
 
 ---
 
@@ -287,7 +288,7 @@
 ## 11. Deployment Strategy
 
 1. ריפו Git ציבורי, עם `.gitignore` הכולל `.env`, `*.db` (אם רלוונטי בזמן פיתוח מקומי), `__pycache__/`.
-2. חיבור הריפו ל-Render כ-Web Service; Build Command: `pip install -r requirements.txt`; Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+2. **פריסה ב-Render באמצעות Docker Runtime (D31):** קובץ `Dockerfile` בשורש הריפו (Python 3.11-slim, מתקין `requirements.txt`, מריץ `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}`). ב-Render בוחרים **Environment: Docker** — Render מזהה את ה-`Dockerfile` אוטומטית ובונה ממנו; אין צורך למלא Build/Start Command בממשק (הם מוגדרים בתוך הקובץ עצמו).
 3. הגדרת משתני הסביבה (`OPENAI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`) ישירות בממשק Render — לא בקוד.
 4. Auto-Deploy מופעל על כל push ל-branch הראשי (D28 — ללא Pipeline נוסף).
 5. Qdrant Cloud: יצירת Cluster בנפרד (מחוץ ל-Render), חד-פעמית, לפני הרצת סקריפט האינדוקס.
